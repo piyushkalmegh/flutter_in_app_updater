@@ -11,9 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 1. MaterialApp is at the absolute root
-    return const MaterialApp(
-      home: HomeScreen(),
-    );
+    return const MaterialApp(home: HomeScreen());
   }
 }
 

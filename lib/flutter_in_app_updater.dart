@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,7 +17,8 @@ class FlutterInAppUpdater {
   }) async {
     try {
       if (Platform.isAndroid) {
-        await _channel.invokeMethod('updateAndroid', {'immediate': immediateAndroid});
+        await _channel
+            .invokeMethod('updateAndroid', {'immediate': immediateAndroid});
       } else if (Platform.isIOS) {
         await _channel.invokeMethod('updateIos', {'appStoreId': iosAppStoreId});
       }
@@ -35,14 +37,16 @@ class FlutterInAppUpdater {
   static Future<void> updateViaCustomApi({
     required BuildContext context,
     required Future<Map<String, dynamic>> Function() fetchConfigFromApi,
-    void Function(String storeUrl, bool isForced, String? releaseNotes)? onUpdateRequired,
+    void Function(String storeUrl, bool isForced, String? releaseNotes)?
+        onUpdateRequired,
     void Function(Object error)? onError,
     String? iosAppStoreId,
     bool bypassInDebug = true,
   }) async {
     try {
       if (bypassInDebug && kDebugMode) {
-        debugPrint("MyInAppUpdate: Bypassing update check because app is running in DEBUG mode.");
+        debugPrint(
+            "MyInAppUpdate: Bypassing update check because app is running in DEBUG mode.");
         return;
       }
 
@@ -52,7 +56,10 @@ class FlutterInAppUpdater {
       bool isForced = data['forced_update'] ?? false;
       String? releaseNotes = data['release_notes'];
       String storeUrlAndroid = data['update_url_android'] ?? '';
-      String storeUrlIos = data['update_url_ios'] ?? (iosAppStoreId != null ? 'https://apps.apple.com/app/id$iosAppStoreId' : '');
+      String storeUrlIos = data['update_url_ios'] ??
+          (iosAppStoreId != null
+              ? 'https://apps.apple.com/app/id$iosAppStoreId'
+              : '');
 
       final packageInfo = await PackageInfo.fromPlatform();
       String currentVersion = packageInfo.version;
@@ -63,7 +70,12 @@ class FlutterInAppUpdater {
         if (onUpdateRequired != null) {
           onUpdateRequired(targetUrl, isForced, releaseNotes);
         } else {
-          _showDefaultUpdateDialog(context, storeUrl: targetUrl, isForced: isForced, releaseNotes: releaseNotes);
+          if (!context.mounted) return;
+
+          _showDefaultUpdateDialog(context,
+              storeUrl: targetUrl,
+              isForced: isForced,
+              releaseNotes: releaseNotes);
         }
       }
     } catch (e) {
@@ -75,8 +87,10 @@ class FlutterInAppUpdater {
   }
 
   static bool _isVersionOlder(String current, String minimum) {
-    List<int> currParts = current.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    List<int> minParts = minimum.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    List<int> currParts =
+        current.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    List<int> minParts =
+        minimum.split('.').map((e) => int.tryParse(e) ?? 0).toList();
 
     for (int i = 0; i < 3; i++) {
       int c = i < currParts.length ? currParts[i] : 0;
@@ -89,11 +103,11 @@ class FlutterInAppUpdater {
 
   /// Built-in fallback dialog responsive to the server's `forced_update` flag
   static void _showDefaultUpdateDialog(
-      BuildContext context, {
-        required String storeUrl,
-        required bool isForced,
-        String? releaseNotes,
-      }) {
+    BuildContext context, {
+    required String storeUrl,
+    required bool isForced,
+    String? releaseNotes,
+  }) {
     showDialog(
       context: context,
       barrierDismissible: !isForced,
@@ -110,9 +124,11 @@ class FlutterInAppUpdater {
                   : 'A newer version of the app is available.'),
               if (releaseNotes != null && releaseNotes.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                const Text("What's New:", style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text("What's New:",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text(releaseNotes, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                Text(releaseNotes,
+                    style: const TextStyle(fontSize: 13, color: Colors.grey)),
               ],
             ],
           ),
