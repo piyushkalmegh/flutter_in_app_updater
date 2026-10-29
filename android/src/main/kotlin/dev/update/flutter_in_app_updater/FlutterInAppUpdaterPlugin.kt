@@ -18,39 +18,59 @@ class FlutterInAppUpdaterPlugin: FlutterPlugin, MethodCallHandler, ActivityAware
     private lateinit var channel : MethodChannel
     private var activity: Activity? = null
     private lateinit var appUpdateManager: AppUpdateManager
+    private lateinit var enterpriseInstaller: EnterpriseInstaller
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_in_app_updater")
         channel.setMethodCallHandler(this)
         appUpdateManager = AppUpdateManagerFactory.create(flutterPluginBinding.applicationContext)
+
+        // Initialize the separate enterprise installer class, passing a lambda to fetch current activity
+        enterpriseInstaller = EnterpriseInstaller { activity }
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        if (call.method == "updateAndroid") {
-            val immediate = call.argument<Boolean>("immediate") ?: true
-            val updateType = if (immediate) AppUpdateType.IMMEDIATE else AppUpdateType.FLEXIBLE
+        when (call.method) {
+            "updateAndroid" -> {
+                val immediate = call.argument<Boolean>("immediate") ?: true
+                val updateType = if (immediate) AppUpdateType.IMMEDIATE else AppUpdateType.FLEXIBLE
 
-            val appUpdateInfoTask = appUpdateManager.appUpdateInfo
-            appUpdateInfoTask.addOnSuccessListener { appUpdateInfo: AppUpdateInfo ->
-                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
-                    appUpdateInfo.isUpdateTypeAllowed(updateType)) {
-                    activity?.let { currentActivity ->
-                        appUpdateManager.startUpdateFlowForResult(
-                            appUpdateInfo,
-                            updateType,
-                            currentActivity,
-                            1234
-                        )
-                        result.success(true)
-                    } ?: result.error("NO_ACTIVITY", "Current activity is null", null)
-                } else {
-                    result.error("NOT_AVAILABLE", "No update available or allowed", null)
+                val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+                appUpdateInfoTask.addOnSuccessListener { appUpdateInfo: AppUpdateInfo ->
+                    if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+                        appUpdateInfo.isUpdateTypeAllowed(updateType)) {
+                        activity?.let { currentActivity ->
+                            appUpdateManager.startUpdateFlowForResult(
+                                appUpdateInfo,
+                                updateType,
+                                currentActivity,
+                                1234
+                            )
+                            result.success(true)
+                        } ?: result.error("NO_ACTIVITY", "Current activity is null", null)
+                    } else {
+                        result.error("NOT_AVAILABLE", "No update available or allowed", null)
+                    }
+                }.addOnFailureListener { e: Exception ->
+                    result.error("UPDATE_ERROR", e.message, null)
                 }
-            }.addOnFailureListener { e: Exception ->
-                result.error("UPDATE_ERROR", e.message, null)
             }
-        } else {
-            result.notImplemented()
+            "installApk" -> {
+                val path = call.argument<String>("path")
+                if (path != null) {
+                    try {
+                        enterpriseInstaller.installApk(path)
+                        result.success(null)
+                    } catch (e: Exception) {
+                        result.error("INSTALL_FAILED", e.message, null)
+                    }
+                } else {
+                    result.error("INVALID_PATH", "The provided APK file path is null.", null)
+                }
+            }
+            else -> {
+                result.notImplemented()
+            }
         }
     }
 

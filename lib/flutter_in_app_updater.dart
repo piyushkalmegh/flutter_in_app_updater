@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+export 'enterprise_installer.dart';
+
 /// A unified plugin to handle native store updates and custom server-driven API checks.
 class FlutterInAppUpdater {
   static const MethodChannel _channel = MethodChannel('flutter_in_app_updater');

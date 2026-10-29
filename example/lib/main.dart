@@ -50,12 +50,14 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(title: const Text('Plugin Example')),
       body: Center(
         child: ElevatedButton(
-          onPressed: () {
-            /*FlutterInAppUpdater.updateNative(
+          onPressed: () async {
+            /* // Use this for Native update
+            FlutterInAppUpdater.updateNative(
                 immediateAndroid: true,
                 iosAppStoreId: '123456789',
               );*/
 
+            /* // Use this for custom api
             FlutterInAppUpdater.updateViaCustomApi(
               context: context,
               fetchConfigFromApi: () async {
@@ -66,6 +68,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   'release_notes': 'Testing manual trigger.',
                 };
               },
+              bypassInDebug: false,
+            );*/
+
+            // Use this for Enterprise apps which are hosted on own company server or AWS or Firebase or Drives
+            await EnterpriseInstaller.downloadAndInstall(
+              context: context,
+              apkUrl: 'http://localhost:8000/MyTestApp.apk',
+              forcedUpdate: true,
               bypassInDebug: false,
             );
           },
