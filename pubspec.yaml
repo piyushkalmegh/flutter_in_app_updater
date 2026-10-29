@@ -1,14 +1,14 @@
 name: flutter_in_app_updater
 description: "A unified Flutter plugin to handle native in-app updates (Google Play & App StoreKit) and custom server-driven API checks with forced/soft updates and custom UI support."
-version: 1.0.0
+version: 1.1.0
 homepage: https://github.com/piyushkalmegh/flutter_in_app_updater
 repository: https://github.com/piyushkalmegh/flutter_in_app_updater
 topics:
   - update
   - in-app-updates
-  - play-core
   - version-check
-  - updater
+  - enterprise
+  - sideloading
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -17,8 +17,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  package_info_plus: ^10.2.2
+
+  http: ^1.6.0
   url_launcher: ^6.3.3
+  path_provider: ^2.1.6
+  package_info_plus: ^10.2.2
 
 dev_dependencies:
   flutter_test:
