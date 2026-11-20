@@ -1,3 +1,10 @@
+## 1.1.1
+
+* **Note:** Requires a newer Flutter SDK (**Flutter 3.47+**) due to `package:material_ui` adoption. Developers on older Flutter versions should evaluate SDK compatibility before upgrading.
+* **Fix:** Resolved build and import issues while preserving backward compatibility.
+
+---
+
 ## 1.1.0
 
 * **New Feature:** Added enterprise direct-download and silent/manual APK installation support via `EnterpriseInstaller`.
