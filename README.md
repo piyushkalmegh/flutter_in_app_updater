@@ -44,7 +44,7 @@ flutter pub get
 This approach lets your backend or firebase remote config decide when updates are required and whether they are forced or optional.
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_in_app_updater/flutter_in_app_updater.dart';
 
 void checkForUpdates(BuildContext context) {
