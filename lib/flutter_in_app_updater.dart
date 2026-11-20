@@ -6,6 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'web_updater_stub.dart'
+  if (dart.library.js_interop) 'flutter_web_updater.dart';
+
 export 'enterprise_installer.dart';
 
 /// A unified plugin to handle native store updates and custom server-driven API checks.
@@ -62,6 +65,16 @@ class FlutterInAppUpdater {
           (iosAppStoreId != null
               ? 'https://apps.apple.com/app/id$iosAppStoreId'
               : '');
+
+      if (kIsWeb) {
+        final currentWebVersion = data['current_web_version'] ?? '1.0.0';
+
+        if (_isVersionOlder(currentWebVersion, minVersion)) {
+          if (!context.mounted) return;
+          _showWebUpdateDialog(context, minVersion, isForced, releaseNotes);
+        }
+        return;
+      }
 
       final packageInfo = await PackageInfo.fromPlatform();
       String currentVersion = packageInfo.version;
@@ -152,6 +165,40 @@ class FlutterInAppUpdater {
           ],
         ),
       ),
+    );
+  }
+
+  static void _showWebUpdateDialog(
+      BuildContext context,
+      String version,
+      bool isForced,
+      String? releaseNotes,
+      ) {
+    showDialog(
+      context: context,
+      barrierDismissible: !isForced,
+      builder: (dialogContext) {
+        return PopScope(
+          canPop: !isForced,
+          child: AlertDialog(
+            title: Text(isForced ? 'Mandatory Web Update' : 'New Web Version ($version)'),
+            content: Text(releaseNotes ?? 'A fresh version of the app is ready. Please refresh to continue.'),
+            actions: [
+              if (!isForced)
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Later'),
+                ),
+              ElevatedButton(
+                onPressed: () {
+                  WebUpdater.reloadBrowser();
+                },
+                child: const Text('Refresh Now'),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
